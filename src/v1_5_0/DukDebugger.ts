@@ -9,13 +9,13 @@ import {
     DebugProtocol
 } from 'vscode-debugprotocol';
 
-import * as Net  from 'net';
-import * as Path from 'path';
-import * as FS   from 'fs';
-import * as util from 'util';
-import * as assert from 'assert';
-import { ISourceMaps, SourceMaps, SourceMap, Bias } from './sourceMaps';
-import * as PathUtils from './pathUtilities';
+import * as Net     from 'net';
+import * as Path    from 'path';
+import * as FS      from 'fs';
+import * as util    from 'util';
+import * as assert  from 'assert';
+import { ISourceMaps, SourceMaps, SourceMap, Bias } from '../sourceMaps';
+import * as PathUtils from '../pathUtilities';
 
 import {
     DukDbgProtocol,
@@ -380,7 +380,7 @@ class ErrorCode
     public static RequestFailed = 100;
 }
 
-class DukDebugSession extends DebugSession
+export class DukDebugSession extends DebugSession
 {
     private static THREAD_ID = 1;
     
@@ -2055,5 +2055,3 @@ class DukDebugSession extends DebugSession
         }
     }
 }
-
-DebugSession.run( DukDebugSession );

@@ -76,7 +76,7 @@
       {
         "type": "duk",
         "label": "Duktape JS",
-        "program": "./out/DukDebugger.js",
+        "program": "./out/main.js",
         "runtime": "node",
         "enableBreakpointsFor": {
           "languageIds": [

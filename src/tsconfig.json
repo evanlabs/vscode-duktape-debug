@@ -7,7 +7,7 @@
 		"removeComments"     : true,
 		"preserveConstEnums" : false,
         
-        "outDir"             : "../../out",
+        "outDir"             : "../out",
         "module"             : "commonjs",
         "moduleResolution"   : "node",
         "allowUnreachableCode": true

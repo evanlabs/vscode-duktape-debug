@@ -79,13 +79,13 @@ function preparePipeline( opts )
 function compileV1_5_0()
 {
     // Create TS project
-    var proj = ts.createProject(  SRC_ROOT + "/v1_5_0/tsconfig.json", {
+    var proj = ts.createProject(  SRC_ROOT + "/tsconfig.json", {
         noEmitOnError : true,
     });
 
     opts = {
         tsProj   : proj,
-        srcRoot  : "../src/v1_5_0"
+        srcRoot  : "../src"
     };
 
     return () => { return preparePipeline( opts ); }
