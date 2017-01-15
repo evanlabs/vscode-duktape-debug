@@ -46,7 +46,6 @@ import {
 import * as Duk from "./DukConsts";
 
 
-
  // Arguments shared between Launch and Attach requests.
 export interface CommonArguments {
     /** comma separated list of trace selectors. Supported:

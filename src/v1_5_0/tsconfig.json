@@ -1,13 +1,13 @@
 {
 	"compilerOptions": {
-		"target"             : "es5",
+		"target"             : "es6",
 		"sourceMap"          : true,
 		"inlineSources"      : false,
 		"noImplicitAny"      : false,
 		"removeComments"     : true,
 		"preserveConstEnums" : false,
         
-        "outDir"             : "../out",
+        "outDir"             : "../../out",
         "module"             : "commonjs",
         "moduleResolution"   : "node",
         "allowUnreachableCode": true

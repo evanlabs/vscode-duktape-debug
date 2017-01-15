@@ -1,8 +1,6 @@
 /// Transport layer for the Duktape debug protocol.
-/// (c) Harold Brenes 2016
-///
-/// Some code adapted from Saami Vaarala's duk_debug.js :
-/// See: https://github.com/svaarala/duktape/blob/master/doc/debugger.rst
+/// Some code was originally adapted from Saami Vaarala's duk_debug.js.
+/// See: https://github.com/svaarala/duktape/blob/v1.5.0/doc/debugger.rst
 ///      https://github.com/svaarala/duktape/blob/master/debugger/duk_debug.js
 
 
@@ -1861,10 +1859,10 @@ export class DukDbgProtocol extends EE.EventEmitter
     //-----------------------------------------------------------
     private reset() : void
     {
-        this._inBufSize  = 0;
-        this._inReadPos  = 0;
-        this._numDvalues = 0;
-        this._msg        = [];
+        this._inBufSize       = 0;
+        this._inReadPos       = 0;
+        this._numDvalues      = 0;
+        this._msg             = [];
 
         this._requestSequence = 0;
         this._curRequest      = null;

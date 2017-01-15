@@ -11,14 +11,7 @@ var uglifyJS        = require( "uglify-js"       );
 // Config
 var SRC_ROOT      = "./src";
 var OUT_DIR       = "./out";
-var TS_CFG_PATH   = SRC_ROOT + "/tsconfig.json";
 var EXT_OUT_DIR   = "./builds";
-
-// Create TS project
-var tsCfg = ts.createProject( TS_CFG_PATH, {
-    noEmitOnError : true,
-    sortOutput    : true
-});
 
 
 /// Methods
@@ -60,30 +53,42 @@ function preparePipeline( opts )
         mangle: false
     };
 
+    var tsProj = opts.tsProj;
+
     // Compile Typescript
-    var tsResult = tsCfg.src()
+    var tsResult = tsProj.src()
         .pipe( sourcemaps.init() )
-        .pipe( ts( tsCfg ) );
+        .pipe( tsProj() );
     
-    var r = tsResult.js;
+    var js  = tsResult.js;
 
     // Minify & mangle
     if( opts.minify )
-        r.pipe( uglifyOutput() );
+        js.pipe( uglifyOutput() );
 
     // Write sourceMaps and output
-    r.pipe( sourcemaps.write( ".", {
-        includeContent: false, 
-        sourceRoot: "../src"
+    js.pipe( sourcemaps.write( ".", {
+        includeContent : false, 
+        sourceRoot     : opts.srcRoot
     } ))
     .pipe( gulp.dest( OUT_DIR ) );
 
-    return r;
+    return js;
 }
 
-function compile( opts )
+function compileV1_5_0()
 {
-    return function() { return preparePipeline( opts ); }
+    // Create TS project
+    var proj = ts.createProject(  SRC_ROOT + "/v1_5_0/tsconfig.json", {
+        noEmitOnError : true,
+    });
+
+    opts = {
+        tsProj   : proj,
+        srcRoot  : "../src/v1_5_0"
+    };
+
+    return () => { return preparePipeline( opts ); }
 }
 
 function packageRelease()
@@ -98,7 +103,7 @@ function packageRelease()
 function buildRelease()
 {
     return function() { 
-        var pipeline = preparePipeline();//{ minify:true, mangle:true });
+        var pipeline = preparePipeline(); //{ minify:true, mangle:true });
         pipeline.on( "end", packageRelease );
         return pipeline; 
     };
@@ -107,7 +112,7 @@ function buildRelease()
 
 
 /// Tasks
-gulp.task( "build", compile() );
+gulp.task( "build", compileV1_5_0() );
 
 gulp.task( "build-release", buildRelease() );
 
