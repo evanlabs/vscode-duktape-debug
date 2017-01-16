@@ -156,8 +156,8 @@
       },
       {
         "type": "duk@1.5.0",
-        "label": "Duktape JS",
-        "program": "./out/1_5_0/DukDebugger.js",
+        "label": "Duktape JS Version 1.5.0",
+        "program": "./out/main.js",
         "runtime": "node",
         "enableBreakpointsFor": {
           "languageIds": [

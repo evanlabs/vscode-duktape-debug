@@ -5,7 +5,6 @@ const Path            = require( "path"            );
 const del             = require( "del"             );
 const runSequence     = require( "run-sequence"    );
 const through         = require( "through2"        );
-const uglifyJS        = require( "uglify-js"       );
 const exec            = require( "child_process"   ).exec;
 
 // Config
@@ -18,6 +17,8 @@ var EXT_OUT_DIR   = "./builds";
 /// ====================================================
 function uglifyOutput( mangle )
 {
+    const uglifyJS = require( "uglify-js" );
+
     return through.obj( function(file, encoding, cb) {
 
         if( file.isNull() ) 
@@ -95,7 +96,7 @@ function compile( opts )
         noEmitOnError : true,
     });
 
-    return () => { return preparePipeline( proj, opts ); }
+    return preparePipeline( proj, opts );
 }
 
 // Generate version file
@@ -148,11 +149,12 @@ function genVersion( cb )
 }
 
 // Compile for debugging
-function build()
+function build( cb )
 {
-   return compile({
+   compile({
        sourceMaps: true
-   });
+   })
+   .on( "end", () => cb() );
 }
 
 /// ====================================================
@@ -160,16 +162,8 @@ function build()
 /// ====================================================
 
 // Compile release version
-function buildRelease()
+function buildRelease( cb )
 {
-    return compile({});
-}
-
-// Create .vsix package
-function packageRelease( cb )
-{
-    console.log( "Packaging extension..." );
-
     // Write version file
     genVersion( (err) => {
             
@@ -179,44 +173,54 @@ function packageRelease( cb )
             return cb( err );
         }
 
-        const isWin32 = /^win/.test( process.platform );
+        compile({})
+        .on( "end", cb );
+    });
+}
 
-        // Generate vsix
-        const args = [
-            "package",
-            "duk-debug.vsix"
-        ];
+// Create .vsix package
+function packageRelease( cb )
+{
+    console.log( "Packaging extension..." );
 
-        const cmd = "vsce" + (isWin32 ? ".cmd " : " ") +
-            args.join( " " );
+    // Write version file
+    const isWin32 = /^win/.test( process.platform );
 
-        exec( cmd, ( error, stdout, stderr ) => {
+    // Generate vsix
+    const args = [
+        "package",
+        "duk-debug.vsix"
+    ];
 
-            console.log( stdout );
+    const cmd = "vsce" + (isWin32 ? ".cmd " : " ") +
+        args.join( " " );
 
-            if( error )
-            {
-                console.error( stderr );
-                return cb( error );
-            }
-            
-            cb();
-        });
+    exec( cmd, ( error, stdout, stderr ) => {
+
+        console.log( stdout );
+
+        if( error )
+        {
+            console.error( stderr );
+            return cb( error );
+        }
+        
+        cb();
     });
 }
 
 /// ====================================================
 /// Tasks
 /// ====================================================
-gulp.task( "build", build() );
+gulp.task( "build", build );
 
-gulp.task( "build-release", buildRelease() );
+gulp.task( "build-release", buildRelease );
 
 gulp.task( "clean",  () => {
 	return del( [OUT_DIR+"/**"] );
 });
 
-gulp.task( "package", ["clean", "build"], packageRelease );
+gulp.task( "package", ["clean", "build-release"], packageRelease );
 
 gulp.task( "watch", ["build"], () => {
     gulp.watch( "./src/**/*.ts", ["build"] );

@@ -615,7 +615,6 @@ export class DukDebugSession extends DebugSession
     {
         this.dbgLog( "[FE] launchRequest" );
         throw new Error( "Launching is not currently supported. Use Attach." );
-        return;
         
         this.dbgLog( "Program : " + args.program );
         this.dbgLog( "CWD     : " + args.cwd );
