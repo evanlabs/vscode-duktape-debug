@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "bluebird": "registry:dt/bluebird#3.0.0+20161229155504",
+    "es6-promise": "registry:common/es6-promise#4.0.0+20161003185919",
     "node": "registry:env/node#6.0.0+20170115054122",
     "source-map": "registry:dt/source-map#0.5.6+20161128184045"
   },

@@ -9,13 +9,14 @@ import {
     DebugProtocol
 } from 'vscode-debugprotocol';
 
-import * as Net     from 'net';
-import * as Path    from 'path';
-import * as FS      from 'fs';
-import * as util    from 'util';
-import * as assert  from 'assert';
-import { ISourceMaps, SourceMaps, SourceMap, Bias } from '../sourceMaps';
-import * as PathUtils from '../pathUtilities';
+import * as Net     from "net";
+import * as Path    from "path";
+import * as FS      from "fs";
+import * as util    from "util";
+import * as assert  from "assert";
+import * as Promise from "bluebird";
+import { ISourceMaps, SourceMaps, SourceMap, Bias } from "../sourceMaps";
+import * as PathUtils from "../pathUtilities";
 
 import {
     DukDbgProtocol,
@@ -1486,7 +1487,7 @@ export class DukDebugSession extends DebugSession
     }
 
     //-----------------------------------------------------------
-    private removeAllTargetBreakpoints() : Promise<any>
+    private removeAllTargetBreakpoints():Promise<any>
     {
         this.dbgLog( "removeAllTargetBreakpoints" );
 
@@ -1498,7 +1499,7 @@ export class DukDebugSession extends DebugSession
                 numBreakpoints = r.breakpoints.length;
                 
                 if( numBreakpoints < 1 )
-                    return Promise.resolve();
+                    return Promise.resolve( [] );
                 
                 var promises = new Array<Promise<any>>();
                 promises.length = numBreakpoints;

@@ -4,11 +4,12 @@
 ///      https://github.com/svaarala/duktape/blob/master/debugger/duk_debug.js
 
 
-import * as Net    from "net"         ;
-import * as EE     from "events"      ;
-import * as assert from "assert"      ;
-import * as Duk    from "./DukConsts" ;
-import * as os     from "os"          ;
+import * as Net     from "net"         ;
+import * as EE      from "events"      ;
+import * as assert  from "assert"      ;
+import * as Duk     from "./DukConsts" ;
+import * as os      from "os"          ;
+import * as Promise from "bluebird"    ;
 
 const MSG_TRACING      :boolean = true;
 const LOG_STATUS_NOTIFY:boolean = false;
