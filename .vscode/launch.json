@@ -4,10 +4,9 @@
 		
 		// Use this to debug the extension's code.
 		// Launch another VSCode window with the duktape project you want 
-		// to debug and have it define the following properties
-		// at the top level of its launch.json file:
+		// to debug and have it define the following property
+		// int a debug configuration of your launch.json file:
 		// 		"debugServer" : 4711,
-    	// 		"type"        : "duk",
         {
             
             //"preLaunchTask"     : "build",
@@ -15,7 +14,7 @@
 			"type"        : "node",
 			"request"     : "launch",
 			"runtimeArgs" : [ "--nolazy" ],
-			"program"     : "${workspaceRoot}/src/main.ts",
+			"program"     : "${workspaceRoot}/out/main.js",
 			"stopOnEntry" : false,
 			"args"        : [ "--server=4711" ],
 			"sourceMaps"  : true,

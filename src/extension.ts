@@ -5,11 +5,18 @@ import * as vscode from 'vscode';
 
 export function activate( context:vscode.ExtensionContext )
 {
-	let disposable = vscode.commands.registerCommand('extension.runDukDebugger', () => {
-        	// NOTE: Placeholder for addding commands in the future
-	});
+	context.subscriptions.push( 
+		vscode.commands.registerCommand( "extension.duk-debug.startSession",
+			cfg => {
 
-	context.subscriptions.push(disposable);
+				let type = cfg.type;
+				let name = cfg.name;
+				let req  = cfg.req;
+
+				vscode.commands.executeCommand( "vscode.startDebug", cfg );
+
+		})
+	);
 }
 
 export function deactivate() {
