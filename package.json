@@ -1,7 +1,7 @@
 {
   "name": "duk-debug",
   "displayName": "Duktape Debugger",
-  "version": "0.2.11",
+  "version": "0.3.0",
   "description": "Debug Adapter for Duktape runtimes.",
   "author": "Harold Brenes",
   "publisher": "HaroldBrenes",
@@ -21,10 +21,17 @@
     "typescript"
   ],
   "engines": {
-    "vscode": "^1.4.0",
-    "node": "^5.10.0"
+    "vscode": "^1.8.1",
+    "node"  : "^6.3.0"
   },
+
   "private": true,
+
+  "scripts": {
+    "prepublish": "node ./node_modules/gulp/bin/gulp.js build-release",
+    "build":      "node ./node_modules/gulp/bin/gulp.js build-release"
+  },
+
   "repository": {
     "type": "git",
     "url": "https://github.com/harold-b/vscode-duktape-debug"
@@ -73,6 +80,8 @@
       }
     ],
     "debuggers": [
+
+      // Default duktape protocol is the latest: v2.0.0
       {
         "type": "duk",
         "label": "Duktape JS",
@@ -84,6 +93,7 @@
             "typescript"
           ]
         },
+
         "initialConfigurations": [
           {
             "name": "Attach",
@@ -97,6 +107,7 @@
             "stopOnEntry": false
           }
         ],
+
         "configurationAttributes": {
           "attach": {
             "properties": {
@@ -140,11 +151,99 @@
                 ],
                 "description": "The local source root that corresponds to the 'remoteRoot'.",
                 "default": null
+              },
+              "debugLog" : {
+                "type": "boolean",
+                "description": "Log to console client-server network traffic and other debug messages. This is an internal development feature but allowed in release mode for the curious.",
+                "default": false
               }
             }
           }
         }
-      }
-    ]
+      } // end 'duk'
+
+      // Support for duktape debug protocol version 1.5.0
+      ,{
+        "type": "duk@1.5.0",
+        "label": "Duktape JS",
+        "program": "./out/1_5_0/DukDebugger.js",
+        "runtime": "node",
+        "enableBreakpointsFor": {
+          "languageIds": [
+            "javascript",
+            "typescript"
+          ]
+        },
+
+        "initialConfigurations": [
+          {
+            "name": "Attach",
+            "type": "duk@1.5.0",
+            "request": "attach",
+            "address": "localhost",
+            "port": 9091,
+            "localRoot": "${workspaceRoot}",
+            "sourceMaps": false,
+            "outDir": null,
+            "stopOnEntry": false
+          }
+        ],
+
+        "configurationAttributes": {
+          "attach": {
+            "properties": {
+              "port": {
+                "type": "number",
+                "description": "Debug port to attach to. Default is 9091.",
+                "default": 9091
+              },
+              "address": {
+                "type": "string",
+                "description": "TCP/IP address on which the debug server is listening. Default is 'localhost'.",
+                "default": "localhost"
+              },
+              "timeout": {
+                "type": "number",
+                "description": "Retry for this number of milliseconds to connect to the debug server. Default is 10000 ms.",
+                "default": 10000
+              },
+              "sourceMaps": {
+                "type": "boolean",
+                "description": "Use JavaScript source maps (if they exist).",
+                "default": true
+              },
+              "outDir": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "If source maps are enabled, the generated code is expected in this directory. If not specified, the generated code is expected in the same directory as its source.",
+                "default": null
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Automatically stop program after launch.",
+                "default": true
+              },
+              "localRoot": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The local source root that corresponds to the 'remoteRoot'.",
+                "default": null
+              },
+              "debugLog" : {
+                "type": "boolean",
+                "description": "Log to console client-server network traffic and other debug messages. This is an internal development feature but allowed in release mode for the curious.",
+                "default": false
+              }
+            }
+          }
+        }
+      } // end 'duk@1.5.0'
+
+    ] // end debuggers
+
   }
 }

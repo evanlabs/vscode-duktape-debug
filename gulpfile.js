@@ -1,18 +1,17 @@
-
-var gulp            = require( "gulp"            );
-var path            = require( "path"            );
-var del             = require( "del"             );
-var ts              = require( "gulp-typescript" );
-var sourcemaps      = require( "gulp-sourcemaps" );
-var runSequence     = require( "run-sequence"    );
-var through         = require( "through2"        );
-var uglifyJS        = require( "uglify-js"       );
+const gulp            = require( "gulp"            );
+const ts              = require( "gulp-typescript" );
+const sourcemaps      = require( "gulp-sourcemaps" );
+const Path            = require( "path"            );
+const del             = require( "del"             );
+const runSequence     = require( "run-sequence"    );
+const through         = require( "through2"        );
+const uglifyJS        = require( "uglify-js"       );
+const exec            = require( "child_process"   ).exec;
 
 // Config
 var SRC_ROOT      = "./src";
 var OUT_DIR       = "./out";
 var EXT_OUT_DIR   = "./builds";
-
 
 /// Methods
 function uglifyOutput( mangle )
@@ -46,85 +45,115 @@ function uglifyOutput( mangle )
     });
 }
 
-function preparePipeline( opts )
+function preparePipeline( tsProj, opts )
 {
     opts = opts || {
         minify: false,
         mangle: false
     };
 
-    var tsProj = opts.tsProj;
+    const SCR_DIR_ABS = Path.resolve( opts.srcRoot || tsProj.projectDirectory );
+    const OUT_DIR_ABS = Path.resolve( OUT_DIR );
 
+    let srcRoot       = Path.relative( OUT_DIR_ABS, SCR_DIR_ABS ).replace( /\\/g, "/" );
+
+   
     // Compile Typescript
     var tsResult = tsProj.src()
         .pipe( sourcemaps.init() )
         .pipe( tsProj() );
     
-    var js  = tsResult.js;
+    var js = tsResult.js;
 
     // Minify & mangle
     if( opts.minify )
-        js.pipe( uglifyOutput() );
+        js = js.pipe( uglifyOutput( opts.mangle ) );
 
-    // Write sourceMaps and output
-    js.pipe( sourcemaps.write( ".", {
-        includeContent : false, 
-        sourceRoot     : opts.srcRoot
-    } ))
-    .pipe( gulp.dest( OUT_DIR ) );
+    // Write sourceMaps
+    if( opts.sourceMaps )
+    {
+        js = js.pipe( sourcemaps.write( ".", {
+            includeContent : false, 
+            sourceRoot     : srcRoot
+        } ))
+    }
+
+    // Write output
+    js = js.pipe( gulp.dest( OUT_DIR ) );
 
     return js;
 }
 
-function compileV1_5_0()
+function compile( opts )
 {
     // Create TS project
     var proj = ts.createProject(  SRC_ROOT + "/tsconfig.json", {
         noEmitOnError : true,
     });
 
-    opts = {
-        tsProj   : proj,
-        srcRoot  : "../src"
-    };
-
-    return () => { return preparePipeline( opts ); }
+    return () => { return preparePipeline( proj, opts ); }
 }
 
-function packageRelease()
+// Compile for debugging
+function build()
+{
+   return compile({
+       sourceMaps: true
+   });
+}
+
+// Compile release version
+function buildRelease()
+{
+    return compile({});
+}
+
+// Create .vsix
+function packageRelease( cb )
 {
     console.log( "Packaging extension..." );
 
-    var copyDirs = [
-        "./out"
-    ];
-}
+    const isWin32 = /^win/.test( process.platform );
 
-function buildRelease()
-{
-    return function() { 
-        var pipeline = preparePipeline(); //{ minify:true, mangle:true });
-        pipeline.on( "end", packageRelease );
-        return pipeline; 
-    };
+    const args = [
+        "package",
+        "duk-debug.vsix"
+    ];
+
+    const cmd = "vsce" + (isWin32 ? ".cmd " : " ") +
+        args.join( " " );
+    console.log( `CMD: ${cmd}`);
+
+    exec( cmd, ( error, stdout, stderr ) => {
+
+        console.log( stdout );
+        console.log( stderr );
+
+        if( error )
+            return cb( error );
+        
+        cb();
+    });
 }
 
 
 
 /// Tasks
-gulp.task( "build", compileV1_5_0() );
+gulp.task( "build", build() );
 
 gulp.task( "build-release", buildRelease() );
 
-gulp.task( "clean", function() {
+gulp.task( "clean",  () => {
 	return del( [OUT_DIR+"/**"] );
 });
 
-gulp.task( "watch", ["build"], function() {
+gulp.task( "package", packageRelease );
+
+gulp.task( "watch", ["build"], () => {
     gulp.watch( "./src/**/*.ts", ["build"] );
 });
 
-gulp.task( "lint", function() {
+gulp.task( "lint", () => {
    var tslint      = require( 'gulp-tslint' );
    return gulp.src( SRC_ROOT + "/*.ts" )
             .pipe( tslint() )
