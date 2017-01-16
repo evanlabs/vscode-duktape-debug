@@ -1173,18 +1173,21 @@ export class DukDbgProtocol extends EE.EventEmitter
                     
                     // Verify protocol version
                     try {
+                        const verRE = /^10[56][0-9]{2}$/;
+
                         let split = this._protoVersion.split( " " );
-                        if( split[0] !== "1" && 
-                           (split[1] !== "10500" && split[1] !== "10600") )
+                        if( split[0] !== "1" || !verRE.test(split[1]) )
                         {
-                            this.log( `Invalid version. Expected '1 10500|10600...', got '${this._protoVersion}'` );
-                            this.disconnect( `Invalid version. Expected '1 10500|10600...', got '${this._protoVersion}'` );
+                            const msg = `Invalid version. Expected '1 10(5|6)**'..., got '${this._protoVersion}'`
+                            this.log( msg );
+                            this.disconnect( msg );
                             return;
                         }
                     }
                     catch( err ) {
-                        this.log( `Error validating protocol version: ${err.toString()}` );
-                        this.disconnect( `Error validating protocol version: ${err.toString()}` );
+                        const msg = `Error validating protocol version: ${err.toString()}`;
+                        this.log( msg );
+                        this.disconnect( msg );
                         return;
                     }
 

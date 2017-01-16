@@ -54,7 +54,7 @@ export enum NotifyType
     PRINT_REMOVED = 0x02,   // Reserved
     ALERT_REMOVED = 0x03,   // Reserved
     LOG_REMOVED   = 0x04,   // Reserved
-    
+
     THROW         = 0x05,
     DETACHING     = 0x06,
     APP_MSG       = 0x07    // Application-specific notification. Added on v1.5.0
@@ -151,25 +151,26 @@ export enum TValueType
 // See DUK_HOBJECT_CLASS_* in duk_hobject.h
 export enum HObjectClassID
 {
-    UNUSED               = 0,
-    ARGUMENTS            = 1,
+    NONE                 = 0,
+    OBJECT               = 1,
     ARRAY                = 2,
-    BOOLEAN              = 3,
-    DATE                 = 4,
-    ERROR                = 5,
-    FUNCTION             = 6,
-    JSON                 = 7,
-    MATH                 = 8,
-    NUMBER               = 9,
-    OBJECT               = 10,
+    FUNCTION             = 3,
+    ARGUMENTS            = 4,
+    BOOLEAN              = 5,
+    DATE                 = 6,
+    ERROR                = 7,
+    JSON                 = 8,
+    MATH                 = 9,
+    NUMBER               = 10,
     REGEXP               = 11,
     STRING               = 12,
     GLOBAL               = 13,
-    OBJENV               = 14,
-    DECENV               = 15,
-    BUFFER               = 16,
+    SYMBOL               = 14,
+    OBJENV               = 15,
+    DECENV               = 16,
     POINTER              = 17,
     THREAD               = 18,
+
     ARRAYBUFFER          = 19,
     DATAVIEW             = 20,
     INT8ARRAY            = 21,
@@ -186,25 +187,26 @@ export enum HObjectClassID
 }
 
 export var HObjectClassNames:Array<string> = [
-    "UNUSED"             ,
-    "Arguments"          ,
+    "NONE"               ,
+    "Object"             ,
     "Array"              ,
+    "Function"           ,
+    "Arguments"          ,
     "Boolean"            ,
     "Date"               ,
     "Error"              ,
-    "Function"           ,
     "JSON"               ,
     "Math"               ,
     "Number"             ,
-    "Object"             ,
     "RegExp"             ,
     "String"             ,
     "global"             ,
+    "Symbol"             ,
     "ObjEnv"             ,
     "DecEnv"             ,
-    "Buffer"             ,
     "Pointer"            ,
     "Thread"             ,
+
     "ArrayBuffer"        ,
     "DataView"           ,
     "Int8Array"          ,

@@ -298,7 +298,7 @@ class PropertySet
     public variables :Variable[];
 
     // Object class type ( for Object set types )
-    public classType :Duk.HObjectClassID = Duk.HObjectClassID.UNUSED;
+    public classType :Duk.HObjectClassID = Duk.HObjectClassID.NONE;
     
     public constructor( type:PropertySetType )
     {
@@ -510,7 +510,7 @@ export class DukDebugSession extends DebugSession
             this.logToClient( `Disconnected: ${reason}\n` ); 
             this.sendEvent( new TerminatedEvent() );
         });
-        
+
         // Throw
         this._dukProto.on( DukEvent[DukEvent.nfy_throw], ( e:DukThrowNotification ) => {
             this.logToClient( `Exception thrown @${e.fileName}:${e.lineNumber}: ${e.message}\n`, "stderr" );
@@ -1813,7 +1813,7 @@ export class DukDebugSession extends DebugSession
     //-----------------------------------------------------------
     private getConstructorNameByObject( ptr:Duk.TValPointer ): Promise<string>
     {
-        // First get the artificials, from the object,
+        // First get the artificials from the object,
         // then find the prototype object from the artificials list,
         // then get it's artificials to find the entry part's max value,
         // then get the constructor and then find its name property
