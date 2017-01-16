@@ -39,7 +39,8 @@
   },
   "files": [
     "out/**",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "VERSION"
   ],
   "dependencies": {
     "process": "^0.11.2",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "bluebird": "^3.4.1",
+    "dateformat": "^2.0.0",
     "del": "~2.2.0",
     "fs-extra": "^0.30.0",
     "gulp": "^3.9.1",

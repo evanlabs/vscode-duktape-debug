@@ -6,7 +6,6 @@ const del             = require( "del"             );
 const runSequence     = require( "run-sequence"    );
 const through         = require( "through2"        );
 const uglifyJS        = require( "uglify-js"       );
-const FS              = require( "fs-extra"        );
 const exec            = require( "child_process"   ).exec;
 
 // Config
@@ -102,6 +101,9 @@ function compile( opts )
 // Generate version file
 function genVersion( cb )
 {
+    const FS = require( "fs-extra"   );
+    const DF = require( "dateformat" );
+
     // Load package.json
     try {
         var package = JSON.parse( FS.readFileSync( "package.json", "utf-8" ) );
@@ -125,13 +127,15 @@ function genVersion( cb )
             return cb( error );
         }
 
-        const hash = stdout;
-        
+        const hash      = stdout;
+        const timestamp = DF( new Date(), "dddd, mmmm dS, yyyy, h:MM:ss TT", true ) + " UTC\n";
+
         // Write file
         try {
             FS.writeFileSync( "VERSION",
-                `version: ${package.version}\n` +
-                `git commit: ${hash}\n\n`,
+                `version: ${package.version}\n`     +
+                `Built from git commit: ${hash}\n`  +
+                `Built on: ${timestamp}`,
                 { encoding: "utf-8" } );
         }
         catch( err ) {
@@ -185,7 +189,6 @@ function packageRelease( cb )
 
         const cmd = "vsce" + (isWin32 ? ".cmd " : " ") +
             args.join( " " );
-        console.log( `CMD: ${cmd}`);
 
         exec( cmd, ( error, stdout, stderr ) => {
 
@@ -213,7 +216,7 @@ gulp.task( "clean",  () => {
 	return del( [OUT_DIR+"/**"] );
 });
 
-gulp.task( "package", packageRelease );
+gulp.task( "package", ["clean", "build"], packageRelease );
 
 gulp.task( "watch", ["build"], () => {
     gulp.watch( "./src/**/*.ts", ["build"] );
