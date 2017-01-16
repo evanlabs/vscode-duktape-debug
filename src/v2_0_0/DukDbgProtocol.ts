@@ -1,6 +1,6 @@
 /// Transport layer for the Duktape debug protocol.
 /// Some code was originally adapted from Saami Vaarala's duk_debug.js.
-/// See: https://github.com/svaarala/duktape/blob/v1.5.0/doc/debugger.rst
+/// See: https://github.com/svaarala/duktape/blob/v2.0.0/doc/debugger.rst
 ///      https://github.com/svaarala/duktape/blob/master/debugger/duk_debug.js
 
 
@@ -92,41 +92,6 @@ export class DukStatusNotification extends DukNotificationMessage
         this.funcname   = <string>msg[4].value;
         this.linenumber = <number>msg[5].value;
         this.pc         = <number>msg[6].value;
-    }
-}
-
-export class DukPrintNotification extends DukNotificationMessage
-{
-    public message:string;
-
-    constructor( msg:DukDvalueMsg )
-    {
-        super( Duk.NotifyType.PRINT );
-        this.message = <string>msg[2].value;
-    }
-}
-
-export class DukAlertNotification extends DukNotificationMessage
-{
-    public message:string;
-
-    constructor( msg:DukDvalueMsg )
-    {
-        super( Duk.NotifyType.ALERT );
-        this.message = <string>msg[2].value;
-    }
-}
-
-export class DukLogNotification extends DukNotificationMessage
-{
-    public level   :number;
-    public message :string;
-
-    constructor( msg:DukDvalueMsg )
-    {
-        super( Duk.NotifyType.LOG );
-        this.level   = <number>msg[2].value;
-        this.message = <string>msg[3].value;
     }
 }
 
@@ -369,8 +334,7 @@ export class DukGetHeapObjInfoResponse extends DukResponse
 {
     public properties:Duk.Property[];
 
-    // REQ <int: 0x23> <tval: heapptr|object|pointer> EOM
-    // REP [int: flags> <str/int: key> [<tval: value> OR <obj: getter> <obj: setter>]]* EOM
+    // REP [<int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>]]* EOM
     constructor( msg:DukDvalueMsg )
     {
         super( Duk.CmdType.GETHEAPOBJINFO );
@@ -403,8 +367,8 @@ export class DukGetHeapObjInfoResponse extends DukResponse
     // We add them both and that is our maximum possible number of properties 
     // that the object may have.
     // See the following docs:
-    // https://github.com/svaarala/duktape/blob/v1.5.0/doc/debugger.rst
-    // https://github.com/svaarala/duktape/blob/v1.5.0/doc/hobject-design.rst
+    // https://github.com/svaarala/duktape/blob/v2.0.0/doc/debugger.rst
+    // https://github.com/svaarala/duktape/blob/v2.0.0/doc/hobject-design.rst
     public get maxPropDescRange() : number
     {
         let e_next:Duk.Property, a_size:Duk.Property;
@@ -441,12 +405,10 @@ export class DukGetHeapObjInfoResponse extends DukResponse
     }
 }
 
-// REQ <int: 0x25> <obj: target> <int: idx_start> <int: idx_end> EOM
-// REP [<int: flags> <str/int: key> [<tval: value> OR <obj: getter> <obj: setter>]]* EOM
-
 // Response is in the same format as DukGetHeapObjInfoResponse
 export class DukGetObjPropDescRangeResponse extends DukGetHeapObjInfoResponse
 {
+    // REP [<int: flags> (<str: key> | <int: key>) (<tval: value> | <obj: getter> <obj: setter>)]* EOM
     constructor( msg:DukDvalueMsg )
     {
         super( msg );
@@ -984,6 +946,7 @@ export class DukDbgProtocol extends EE.EventEmitter
     //-----------------------------------------------------------
     public requestLocalVariables( stackLevel:number ) : Promise<any>
     {
+        // REQ <int: 0x1d> <int: level> EOM
         this._outBuf.clear();
         this._outBuf.writeREQ();
         this._outBuf.writeInt( Duk.CmdType.GETLOCALS );
@@ -996,11 +959,12 @@ export class DukDbgProtocol extends EE.EventEmitter
     //-----------------------------------------------------------
     public requestEval( expression:string, stackLevel:number = -1 ) : Promise<any>
     {
+        // REQ <int: 0x1e> (<int: level> | <null>) <str: expression> EOM
         this._outBuf.clear();
         this._outBuf.writeREQ();
         this._outBuf.writeInt( Duk.CmdType.EVAL );
-        this._outBuf.writeString( expression );
         this._outBuf.writeInt( stackLevel );
+        this._outBuf.writeString( expression );
         this._outBuf.writeEOM();
 
         return this.sendRequest( Duk.CmdType.EVAL, this._outBuf.finish() );
@@ -1009,6 +973,8 @@ export class DukDbgProtocol extends EE.EventEmitter
     //-----------------------------------------------------------
     public requestInspectHeapObj( ptr:Duk.TValPointer, flags:number = 0 ) : Promise<any>
     {
+        // REQ <int: 0x23> (<heapptr: target> | <object: target> | <pointer: target>) EOM
+
         if( !ptr || ( !ptr.lopart && !ptr.hipart ) )
         {
             this.log( "requestInspectHeapObj: Warning pointer was NULL" );
@@ -1028,6 +994,7 @@ export class DukDbgProtocol extends EE.EventEmitter
     //-----------------------------------------------------------
     public requestGetObjPropDescRange( ptr:Duk.TValPointer, idxStart:number, idxEnd:number ) : Promise<any>
     {
+        // REQ <int: 0x25> <obj: target> <int: idx_start> <int: idx_end> EOM
         if( !ptr || ( !ptr.lopart && !ptr.hipart ) )
         {
             this.log( "requestGetObjPropDescRange: Warning pointer was NULL" );
@@ -1174,11 +1141,10 @@ export class DukDbgProtocol extends EE.EventEmitter
                     // Verify protocol version
                     try {
                         let split = this._protoVersion.split( " " );
-                        if( split[0] !== "1" && 
-                           (split[1] !== "10500" && split[1] !== "10600") )
+                        if( split[0] !== "2" && split[1] !== "20000" )
                         {
-                            this.log( `Invalid version. Expected '1 10500|10600...', got '${this._protoVersion}'` );
-                            this.disconnect( `Invalid version. Expected '1 10500|10600...', got '${this._protoVersion}'` );
+                            this.log( `Invalid version. Expected '2 20000...', got '${this._protoVersion}'` );
+                            this.disconnect( `Invalid version. Expected '2 20000...', got '${this._protoVersion}'` );
                             return;
                         }
                     }
@@ -1634,16 +1600,16 @@ export class DukDbgProtocol extends EE.EventEmitter
                     this.emit( DukEvent[DukEvent.nfy_status], new DukStatusNotification( msg ) );
                 break;
 
-                case Duk.NotifyType.PRINT     :
-                    this.emit( DukEvent[DukEvent.nfy_print], new DukPrintNotification( msg ) );
+                case Duk.NotifyType.PRINT_REMOVED     :
+                    throw new Error( "Removed in v2.0.0" );
                 break;
 
-                case Duk.NotifyType.ALERT     :
-                    this.emit( DukEvent[DukEvent.nfy_alert], new DukAlertNotification( msg ) );
+                case Duk.NotifyType.ALERT_REMOVED     :
+                    throw new Error( "Removed in v2.0.0" );
                 break;
 
-                case Duk.NotifyType.LOG       :
-                    this.emit( DukEvent[DukEvent.nfy_log], new DukLogNotification( msg ) );
+                case Duk.NotifyType.LOG_REMOVED       :
+                    throw new Error( "Removed in v2.0.0" );
                 break;
 
                 case Duk.NotifyType.THROW     :

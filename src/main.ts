@@ -7,6 +7,7 @@ import {
 
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DukDebugSession as DukDebug1_5_0 } from "./v1_5_0/DukDebugger";
+import { DukDebugSession as DukDebug2_0_0 } from "./v2_0_0/DukDebugger";
 
 const DEFAULT_VERSION = "2.0.0";
 
@@ -38,11 +39,11 @@ class ProxyDebugSession extends DebugSession
         
         if( version === "2.0.0" )
         {
-            throw new Error( "Unimplemented" );
+            this._impl = new DukDebug2_0_0();
         }
         else if( version === "1.5.0" )
         {
-            this._impl = new DukDebug1_5_0();;
+            this._impl = new DukDebug1_5_0();
         }
         else
         {
