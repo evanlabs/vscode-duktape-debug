@@ -4,5 +4,5 @@ out/**
 **/bin/**
 **/obj/**
 
-./VERSION
+VERSION
 *.vsix
