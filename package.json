@@ -22,16 +22,14 @@
   ],
   "engines": {
     "vscode": "^1.8.1",
-    "node"  : "^6.3.0"
+    "node": "^6.3.0"
   },
-
   "private": true,
-
   "scripts": {
     "prepublish": "node ./node_modules/gulp/bin/gulp.js build-release",
-    "build":      "node ./node_modules/gulp/bin/gulp.js build-release"
+    "build": "node ./node_modules/gulp/bin/gulp.js build-release",
+    "postinstall": "node node_modules/vscode/bin/install"
   },
-
   "repository": {
     "type": "git",
     "url": "https://github.com/harold-b/vscode-duktape-debug"
@@ -65,9 +63,6 @@
     "uglify-js": "^2.7.0",
     "vscode": "^1.0.3"
   },
-  "scripts": {
-    "postinstall": "node node_modules/vscode/bin/install"
-  },
   "main": "./out/extension",
   "activationEvents": [],
   "contributes": {
@@ -80,8 +75,6 @@
       }
     ],
     "debuggers": [
-
-      // Default duktape protocol is the latest: v2.0.0
       {
         "type": "duk",
         "label": "Duktape JS",
@@ -93,7 +86,6 @@
             "typescript"
           ]
         },
-
         "initialConfigurations": [
           {
             "name": "Attach",
@@ -107,7 +99,6 @@
             "stopOnEntry": false
           }
         ],
-
         "configurationAttributes": {
           "attach": {
             "properties": {
@@ -152,7 +143,7 @@
                 "description": "The local source root that corresponds to the 'remoteRoot'.",
                 "default": null
               },
-              "debugLog" : {
+              "debugLog": {
                 "type": "boolean",
                 "description": "Log to console client-server network traffic and other debug messages. This is an internal development feature but allowed in release mode for the curious.",
                 "default": false
@@ -160,10 +151,8 @@
             }
           }
         }
-      } // end 'duk'
-
-      // Support for duktape debug protocol version 1.5.0
-      ,{
+      },
+      {
         "type": "duk@1.5.0",
         "label": "Duktape JS",
         "program": "./out/1_5_0/DukDebugger.js",
@@ -174,7 +163,6 @@
             "typescript"
           ]
         },
-
         "initialConfigurations": [
           {
             "name": "Attach",
@@ -188,7 +176,6 @@
             "stopOnEntry": false
           }
         ],
-
         "configurationAttributes": {
           "attach": {
             "properties": {
@@ -233,7 +220,7 @@
                 "description": "The local source root that corresponds to the 'remoteRoot'.",
                 "default": null
               },
-              "debugLog" : {
+              "debugLog": {
                 "type": "boolean",
                 "description": "Log to console client-server network traffic and other debug messages. This is an internal development feature but allowed in release mode for the curious.",
                 "default": false
@@ -241,9 +228,7 @@
             }
           }
         }
-      } // end 'duk@1.5.0'
-
-    ] // end debuggers
-
+      }
+    ]
   }
 }

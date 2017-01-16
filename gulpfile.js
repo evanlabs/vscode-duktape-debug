@@ -6,6 +6,7 @@ const del             = require( "del"             );
 const runSequence     = require( "run-sequence"    );
 const through         = require( "through2"        );
 const uglifyJS        = require( "uglify-js"       );
+const FS              = require( "fs-extra"        );
 const exec            = require( "child_process"   ).exec;
 
 // Config
@@ -13,7 +14,9 @@ var SRC_ROOT      = "./src";
 var OUT_DIR       = "./out";
 var EXT_OUT_DIR   = "./builds";
 
+/// ====================================================
 /// Methods
+/// ====================================================
 function uglifyOutput( mangle )
 {
     return through.obj( function(file, encoding, cb) {
@@ -45,6 +48,7 @@ function uglifyOutput( mangle )
     });
 }
 
+// Create compilation pipeline
 function preparePipeline( tsProj, opts )
 {
     opts = opts || {
@@ -84,6 +88,7 @@ function preparePipeline( tsProj, opts )
     return js;
 }
 
+// Compile project w/ options
 function compile( opts )
 {
     // Create TS project
@@ -94,6 +99,50 @@ function compile( opts )
     return () => { return preparePipeline( proj, opts ); }
 }
 
+// Generate version file
+function genVersion( cb )
+{
+    // Load package.json
+    try {
+        var package = JSON.parse( FS.readFileSync( "package.json", "utf-8" ) );
+    }
+    catch( err ) { 
+        console.error( "Failed to parse package.json" );
+        return cb( err );
+    }
+
+    const isWin32 = /^win/.test( process.platform );
+
+    // Get git commit hash
+    const cmd = "git" + (isWin32 ? ".exe" : "") + " rev-parse HEAD";
+    
+    exec( cmd, ( error, stdout, stderr ) => {
+
+        if( error )
+        {
+            console.error( stdout );
+            console.error( stderr );
+            return cb( error );
+        }
+
+        const hash = stdout;
+        
+        // Write file
+        try {
+            FS.writeFileSync( "VERSION",
+                `version: ${package.version}\n` +
+                `git commit: ${hash}\n\n`,
+                { encoding: "utf-8" } );
+        }
+        catch( err ) {
+            console.error( "Failed write VERSION file." );
+            return cb( err );
+        }
+
+        cb();
+    });
+}
+
 // Compile for debugging
 function build()
 {
@@ -102,43 +151,60 @@ function build()
    });
 }
 
+/// ====================================================
+/// Task Functions
+/// ====================================================
+
 // Compile release version
 function buildRelease()
 {
     return compile({});
 }
 
-// Create .vsix
+// Create .vsix package
 function packageRelease( cb )
 {
     console.log( "Packaging extension..." );
 
-    const isWin32 = /^win/.test( process.platform );
+    // Write version file
+    genVersion( (err) => {
+            
+        if( err )
+        {
+            console.error( "Failed generate version file." );
+            return cb( err );
+        }
 
-    const args = [
-        "package",
-        "duk-debug.vsix"
-    ];
+        const isWin32 = /^win/.test( process.platform );
 
-    const cmd = "vsce" + (isWin32 ? ".cmd " : " ") +
-        args.join( " " );
-    console.log( `CMD: ${cmd}`);
+        // Generate vsix
+        const args = [
+            "package",
+            "duk-debug.vsix"
+        ];
 
-    exec( cmd, ( error, stdout, stderr ) => {
+        const cmd = "vsce" + (isWin32 ? ".cmd " : " ") +
+            args.join( " " );
+        console.log( `CMD: ${cmd}`);
 
-        console.log( stdout );
-        console.log( stderr );
+        exec( cmd, ( error, stdout, stderr ) => {
 
-        if( error )
-            return cb( error );
-        
-        cb();
+            console.log( stdout );
+
+            if( error )
+            {
+                console.error( stderr );
+                return cb( error );
+            }
+            
+            cb();
+        });
     });
 }
 
-
-
+/// ====================================================
 /// Tasks
+/// ====================================================
 gulp.task( "build", build() );
 
 gulp.task( "build-release", buildRelease() );
